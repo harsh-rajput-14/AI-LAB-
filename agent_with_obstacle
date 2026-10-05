@@ -1,0 +1,57 @@
+# Environment: Location A, B (Obstacle), C
+# States: '.' = Clean, '*' = Dirty, 'X' = Obstacle
+environment = {"A": "*", "B": "X", "C": "*"}
+
+# Internal Model tracking visited status and obstacles
+agent_model = {"A": "unknown", "B": "unknown", "C": "unknown"}
+agent_pos = "A"
+
+
+def vacuum_agent(location):
+    # Perceive current location
+    is_dirty = environment[location] == "*"
+
+    # 1. Update internal model
+    if is_dirty:
+        agent_model[location] = "dirty"
+    else:
+        agent_model[location] = "clean"
+
+    # 2. Decide action based on model
+    if agent_model[location] == "dirty":
+        return "SUCK"
+    elif location == "A":
+        return "RIGHT"
+    elif location == "C":
+        return "LEFT"
+
+
+# Run Agent Loop
+for _ in range(5):
+    print(f"Agent is at: {agent_pos} | Model Memory: {agent_model}")
+
+    action = vacuum_agent(agent_pos)
+
+    if action == "SUCK":
+        environment[agent_pos] = "."
+        print("Action: Cleaned dirt!")
+
+    elif action == "RIGHT":
+        next_pos = "B" if agent_pos == "A" else "C"
+        # Check obstacle before moving
+        if environment[next_pos] == "X":
+            agent_model[next_pos] = "obstacle"  # Remember obstacle in model
+            print(f"Action: Tried RIGHT, but hit OBSTACLE at {next_pos}!")
+        else:
+            agent_pos = next_pos
+            print(f"Action: Moved RIGHT to {agent_pos}")
+
+    elif action == "LEFT":
+        next_pos = "A" if agent_pos == "C" else "B"
+        if environment[next_pos] == "X":
+            agent_model[next_pos] = "obstacle"
+            print(f"Action: Tried LEFT, but hit OBSTACLE at {next_pos}!")
+        else:
+            agent_pos = next_pos
+            print(f"Action: Moved LEFT to {agent_pos}")
+    print("-" * 40)
